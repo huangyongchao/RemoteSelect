@@ -3,7 +3,7 @@ RemoteSelect.vue
 <template>
     <div>
         <div class="taginput" v-if="isshowtag">
-            <el-tag :type="tagtype" :key="val" :closable="istagclose" @close="tagclose">{{this.vallabel}}</el-tag>
+            <el-tag :type="tagtype" :key="val" :closable="istagclose" @close="clear">{{this.vallabel}}</el-tag>
         </div>
         <el-select
             v-if="!isshowtag"
@@ -160,12 +160,12 @@ RemoteSelect.vue
                     }*/
 
             },
-            onselected(value) {
+            selected(value) {
                 if (value) {
                     this.val = value
                     for (var i = 0; i < this.datalist.length; i++) {
                         if (this.datalist[i].value === value) {
-                            this.$emit('input', this.datalist[i].value);
+                            this.$emit('input', value);
                             this.$emit("change", this.datalist[i])
                             if (this.showtag == true || this.showtag == 'true') {
                                 this.isshowtag = true;
@@ -174,11 +174,23 @@ RemoteSelect.vue
                         }
                     }
                 }
+            },
+            onselected(value) {
+
+                for (var i = 0; i < this.datalist.length; i++) {
+                    if (this.datalist[i].value === value) {
+                        this.initlabel = this.datalist[i].label
+                    }
+                }
+                this.initv = value;
+
 
             },
             clear() {
                 this.val = ''
                 this.vallabel = ''
+                this.initv = ''
+                this.isshowtag = false
                 this.$emit('input', '');
                 this.$emit("change", {value: '', label: ''})
 
@@ -204,6 +216,8 @@ RemoteSelect.vue
                         this.val = val;
                         this.vallabel = label;
                         this.isshowtag = true;
+                        this.initv = val;
+                        this.initlabel = label
 
 
                     }).catch(e => this.pageLoading = false)
@@ -211,12 +225,7 @@ RemoteSelect.vue
 
 
             },
-            tagclose() {
-                this.val = ''
-                this.vallabel = ''
-                this.isshowtag = false;
 
-            },
             prepage(cp) {
 
                 if (this.page > 1) {
@@ -230,33 +239,27 @@ RemoteSelect.vue
             },
             initdata() {
                 if (this.initv && this.initlabel) {
-                    var exist = false;
-                    this.datalist.forEach((n, index) => {
-                        if (n.value == this.initv) {
-                            exist = true
-                            this.onselected(this.initv)
-
-                        }
-                    })
-                    if (!exist) {
-                        var i = {}
-                        i['value'] = this.initv
-                        i['label'] = this.initlabel
-                        this.datalist.push(i)
-                        this.onselected(this.initv)
-
-                    }
+                    this.add(this.initv, this.initlabel);
+                    this.selected(this.initv)
 
 
                 } else {
-                    this.$emit('input', null);
-                    this.$emit("change", {})
-                    if (this.showtag == true || this.showtag == 'true') {
-                        if (!this.val) {
-                            this.vallabel = ''
-                        }
+                    this.clear();
+                }
+            },
+            add(v, l) {
+                var exist = false;
+                this.datalist.forEach((n, index) => {
+                    if (n.value == v) {
+                        exist = true
 
                     }
+                })
+                if (!exist) {
+                    var i = {}
+                    i['value'] = v
+                    i['label'] = l
+                    this.datalist.push(i)
                 }
             }
         },
@@ -272,14 +275,6 @@ RemoteSelect.vue
             },
             initv: function (val) {
 
-                if (!this.initv) {
-                    this.val = ''
-                    if (this.showtag == true || this.showtag == 'true') {
-                        this.isshowtag = false;
-
-                        this.vallabel = ''
-                    }
-                }
 
                 this.initdata();
             }
@@ -311,6 +306,7 @@ RemoteSelect.vue
         height: 28px;
     }
 </style>
+
 
 
 
