@@ -17,6 +17,7 @@ RemoteSelect.vue
             :remote-method="search"
             @change="onselected"
             @clear="clear"
+            @keyup.enter.native="create"
             :loading="loading">
             <el-option
                 v-for="(item,index) in datalist"
@@ -98,6 +99,10 @@ RemoteSelect.vue
                 type: String,
                 default: '',
                 required: true
+            },
+            addurl: {
+                type: String,
+                default: ''
             }
 
         },
@@ -174,6 +179,36 @@ RemoteSelect.vue
                 this.$emit("change", {value: '', label: ''})
 
             },
+            create(){
+                var label = this.$el.querySelector("input").value;
+                var params={}
+                params[this.labelKey]=label;
+                if(this.addurl&& label){
+                    this.$axios.post(this.addurl, params).then(res => {
+                        //总数赋值
+                        //页面元素赋值
+
+                        if (!res.data.success) {
+                            this.$message({
+                                type: 'error',
+                                message: 'Enter Add Error'
+                            })
+                            return
+                        }
+
+                        var val = res.data.value;
+                        this.val = val;
+                        this.vallabel= label;
+                        this.isshowtag=true;
+
+
+                    }).catch(e => this.pageLoading = false)
+                }
+
+
+
+
+            },
             tagclose() {
                 this.val = ''
                 this.vallabel = ''
@@ -207,10 +242,11 @@ RemoteSelect.vue
                         this.datalist.push(i)
                     }
 
-                }else{
+                } else {
                     this.$emit('input', null);
                     this.$emit("change", {})
-                    this.vallabel=''
+                    this.vallabel = ''
+                    this.showtag = false
                 }
             }
         },
@@ -232,7 +268,6 @@ RemoteSelect.vue
         },
         computed: {
 
-
             isshowtag: function () {
                 if (this.showtag === 'true' && this.val != '' && this.val) {
                     return true;
@@ -249,7 +284,7 @@ RemoteSelect.vue
             //如果是readonly
             if (this.readonly == 'true') {
                 this.selectdisable = true
-                this.istagclose = false
+                this.isshowtag = false
             }
         }
     }
@@ -272,6 +307,8 @@ RemoteSelect.vue
 ```
  <remote-select label-key="labelname" showtag="true" 
  readonly="false" v-model="form1.labelid" :initv="form1.labelid"
- :initlabel="form1.labelname" url="dspCampaignsLabel/loadPage"
+ :initlabel="form1.labelname" 
+ url="dspCampaignsLabel/loadPage" 
+ addurl="dspCampaignsLabel/save"
  placeholder="Label"></remote-select>
 ```
