@@ -108,51 +108,51 @@ RemoteSelect.vue
                      if (this.isinit == true) {
                          this.isinit = false
                      }*/
-                    this.query = query;
-                    var qo = {};
-                    qo[this.labelKey] = query
-                    var params = {
-                        page: this.page,
-                        size: this.pagesize,
-                        query: qo
-                    }
-                    params['orderby'] = this.valueKey + ' desc'
-                    //调用post请求
-                    this.$axios.post(this.url, params).then(res => {
-                        //总数赋值
-                        //页面元素赋值
-                        if (res.data.rows && res.data.rows.length > 0) {
-                            this.datalist = []
-                            var rs = [];
-                            res.data.rows.forEach((item, idx) => {
-                                var o = {};
-                                o['value'] = item[this.valueKey]
-                                o['label'] = item[this.labelKey]
-                                rs.push(o)
-                            })
+                this.query = query;
+                var qo = {};
+                qo[this.labelKey] = query
+                var params = {
+                    page: this.page,
+                    size: this.pagesize,
+                    query: qo
+                }
+                params['orderby'] = this.valueKey + ' desc'
+                //调用post请求
+                this.$axios.post(this.url, params).then(res => {
+                    //总数赋值
+                    //页面元素赋值
+                    if (res.data.rows && res.data.rows.length > 0) {
+                        this.datalist = []
+                        var rs = [];
+                        res.data.rows.forEach((item, idx) => {
+                            var o = {};
+                            o['value'] = item[this.valueKey]
+                            o['label'] = item[this.labelKey]
+                            rs.push(o)
+                        })
 
-                            if (rs.length < this.pagesize) {
-                                this.layout = 'prev'
-                            } else {
-                                this.layout = 'prev,next'
-
-                            }
-                            this.datalist = rs;
+                        if (rs.length < this.pagesize) {
+                            this.layout = 'prev'
                         } else {
-                            this.datalist = []
+                            this.layout = 'prev,next'
+
                         }
+                        this.datalist = rs;
+                    } else {
+                        this.datalist = []
+                    }
 
-                    }).catch(e => this.pageLoading = false)
+                }).catch(e => this.pageLoading = false)
 
 
-            /*    }else{
+                /*    }else{
 
-                    this.datalist = this.list.filter(item => {
-                        return item.label.toLowerCase()
-                            .indexOf(query.toLowerCase()) > -1;
-                    });
+                        this.datalist = this.list.filter(item => {
+                            return item.label.toLowerCase()
+                                .indexOf(query.toLowerCase()) > -1;
+                        });
 
-                }*/
+                    }*/
 
             },
             onselected(value) {
@@ -207,16 +207,31 @@ RemoteSelect.vue
                         this.datalist.push(i)
                     }
 
+                }else{
+                    this.$emit('input', null);
+                    this.$emit("change", {})
                 }
             }
         },
         watch: {
+            readonly: function () {
+                if (this.readonly == 'true' || this.readonly == true) {
+                    this.selectdisable = true
+                    this.istagclose = false
+                } else {
+                    this.selectdisable = false
+                    this.istagclose = true
+                }
+            },
             initv: function (val) {
                 this.initdata();
             }
 
+
         },
         computed: {
+
+
             isshowtag: function () {
                 if (this.showtag === 'true' && this.val != '' && this.val) {
                     return true;
@@ -249,6 +264,7 @@ RemoteSelect.vue
         height: 28px;
     }
 </style>
+
 
 ```
 使用
