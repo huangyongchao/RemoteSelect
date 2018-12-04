@@ -210,6 +210,7 @@ RemoteSelect.vue
                 }else{
                     this.$emit('input', null);
                     this.$emit("change", {})
+                    this.vallabel=''
                 }
             }
         },
