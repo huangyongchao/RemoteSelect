@@ -2,11 +2,11 @@ RemoteSelect.vue
 ```
 <template>
     <div>
-        <div class="taginput" v-show="isshowtag">
-            <el-tag :type="tagtype" :key="val" :closable="istagclose" @close="tagclose">{{vallabel}}</el-tag>
+        <div class="taginput" v-if="isshowtag">
+            <el-tag :type="tagtype" :key="val" :closable="istagclose" @close="tagclose">{{this.vallabel}}</el-tag>
         </div>
         <el-select
-            v-show="!isshowtag"
+            v-if="!isshowtag"
             :disabled="selectdisable"
             filterable
             v-model="val"
@@ -45,7 +45,7 @@ RemoteSelect.vue
                 istagclose: true,
                 selectdisable: false,
                 val: '',
-                vallabel: '',
+                vallabel: 'xxx',
                 isfoucs: false,
                 keyword: '',
                 page: 1,
@@ -70,7 +70,7 @@ RemoteSelect.vue
                 default: ''
             },
             showtag: {
-                default: 'false'
+                default: 'true'
             },
             initv: {
                 default: ''
@@ -161,16 +161,20 @@ RemoteSelect.vue
 
             },
             onselected(value) {
-                this.val = value
-
-                this.datalist.forEach((item, ids) => {
-                    if (item.value == value) {
-                        this.val = value
-                        this.vallabel = item.label
-                        this.$emit('input', item.value);
-                        this.$emit("change", item)
+                if (value) {
+                    this.val = value
+                    for (var i = 0; i < this.datalist.length; i++) {
+                        if (this.datalist[i].value === value) {
+                            this.$emit('input', this.datalist[i].value);
+                            this.$emit("change", this.datalist[i])
+                            if (this.showtag == true || this.showtag == 'true') {
+                                this.isshowtag = true;
+                                this.vallabel = this.datalist[i].label
+                            }
+                        }
                     }
-                })
+                }
+
             },
             clear() {
                 this.val = ''
@@ -179,11 +183,11 @@ RemoteSelect.vue
                 this.$emit("change", {value: '', label: ''})
 
             },
-            create(){
+            create() {
                 var label = this.$el.querySelector("input").value;
-                var params={}
-                params[this.labelKey]=label;
-                if(this.addurl&& label){
+                var params = {}
+                params[this.labelKey] = label;
+                if (this.addurl && label) {
                     this.$axios.post(this.addurl, params).then(res => {
                         //总数赋值
                         //页面元素赋值
@@ -198,20 +202,20 @@ RemoteSelect.vue
 
                         var val = res.data.value;
                         this.val = val;
-                        this.vallabel= label;
-                        this.isshowtag=true;
+                        this.vallabel = label;
+                        this.isshowtag = true;
 
 
                     }).catch(e => this.pageLoading = false)
                 }
 
 
-
-
             },
             tagclose() {
                 this.val = ''
                 this.vallabel = ''
+                this.isshowtag = false;
+
             },
             prepage(cp) {
 
@@ -238,15 +242,21 @@ RemoteSelect.vue
                         var i = {}
                         i['value'] = this.initv
                         i['label'] = this.initlabel
-                        this.onselected(this.initv)
                         this.datalist.push(i)
+                        this.onselected(this.initv)
+
                     }
+
 
                 } else {
                     this.$emit('input', null);
                     this.$emit("change", {})
-                    this.vallabel = ''
-                    this.showtag = false
+                    if (this.showtag == true || this.showtag == 'true') {
+                        if (!this.val) {
+                            this.vallabel = ''
+                        }
+
+                    }
                 }
             }
         },
@@ -261,22 +271,23 @@ RemoteSelect.vue
                 }
             },
             initv: function (val) {
+
+                if (!this.initv) {
+                    this.val = ''
+                    if (this.showtag == true || this.showtag == 'true') {
+                        this.isshowtag = false;
+
+                        this.vallabel = ''
+                    }
+                }
+
                 this.initdata();
             }
 
 
         },
-        computed: {
-
-            isshowtag: function () {
-                if (this.showtag === 'true' && this.val != '' && this.val) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        },
         mounted() {
+            this.val = ''
             this.isinit = true
             this.search(this.query);
             this.initdata();
@@ -300,6 +311,7 @@ RemoteSelect.vue
         height: 28px;
     }
 </style>
+
 
 
 ```
